@@ -17,6 +17,9 @@ export default class App extends Component {
       this.refs.chart.reload();
     }
   }
+  componentDidMount(){
+    this.props.onRef && this.props.onRef(this.refs.chart)
+  }
 
   setNewOption(option) {
     this.refs.chart.postMessage(JSON.stringify(option));
