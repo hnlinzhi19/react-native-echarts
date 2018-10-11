@@ -26,6 +26,7 @@ export default class App extends Component {
   }
 
   render() {
+    console.log('render height',this.props.height);
     return (
       <View style={{flex: 1, height: this.props.height || 400,}}>
         <WebView

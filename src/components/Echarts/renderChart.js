@@ -46,15 +46,29 @@ export default function renderChart(props) {
     }
     hammertime.on('tap', function(ev){
       ev.preventDefault();
-      // console.log('tap',ev);
-      const targetPx =myChart.convertFromPixel({seriesIndex: 0}, [ev.center.x, ev.center.y]);
+      console.log('tap',ev);
+      var targetPx =myChart.convertFromPixel({seriesIndex: 0}, [ev.center.x, ev.center.y]);
       sendMessage({currentPoint:targetPx});
       myChart.dispatchAction({
         type: 'showTip',
         x: ev.center.x,
         y: ev.center.y,
       });
+    
     });
+    hammertime.on('panmove', (ev) =>{
+      ev.preventDefault();
+      var targetPx =myChart.convertFromPixel({seriesIndex: 0}, [ev.center.x, ev.center.y]);
+      sendMessage({currentPoint:targetPx});
+      myChart.dispatchAction({
+        type: 'showTip',
+        x:ev.center.x,
+        y:ev.center.y,
+      });
+    });
+    // myChart.on('finished',function(){
+    //   console.log('finished);
+    // });
     // myChart.on('click', function(params) {
     //   var seen = [];
     //   var paramsString = JSON.stringify(params, function(key, val) {
