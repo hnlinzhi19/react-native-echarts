@@ -1,15 +1,18 @@
-import echarts from './echarts.min';
+// import echarts from './echarts.min';
 import toString from '../../util/toString';
 
 export default function renderChart(props) {
   const height = `${props.height || 400}px`;
   const width = props.width ? `${props.width}px` : 'auto';
-  console.log(props);
   const chartType = props.chartType || ''
+  console.log(props,chartType);
   return `
-     var originOption = ${toString(props.option)};
-     var allDates = ${toString(props.dates || [])};
-     var currentType = ${toString(chartType)};
+  setTimeout(function() {
+    var originOption = ${toString(props.option)};
+    var allDates = ${toString(props.dates || [])};
+    var currentType = ${toString(chartType)};
+    var isPressed = false;
+    console.log('start render',originOption);
 
     document.getElementById('main').style.height = "${height}";
     document.getElementById('main').style.width = "${width}";
@@ -23,7 +26,7 @@ export default function renderChart(props) {
       if (option.type) {
         switch(option.type){
           case 'chartLegendChange': 
-            console.log('change setting',);
+            // console.log('change setting',);
             eval(option.settings);
             myChart.dispatchAction({
               type: 'hideTip',
@@ -32,6 +35,10 @@ export default function renderChart(props) {
           case 'getKlineType':
             window.getCurrentPointCb(option);
             break;
+          case 'reset':
+            // myChart.
+            // console.log('settings',option.settings);
+            myChart.setOption(option.settings);
           default:
         }
       }  else {
@@ -39,6 +46,9 @@ export default function renderChart(props) {
       }
     });
     const canvas = myChart.getZr().dom.querySelector('canvas');
+    canvas.addEventListener('touchend', () =>{
+      isPressed = false;
+    },false)
     var hammertime = new Hammer(canvas, {});
 
     function sendMessage(params){
@@ -212,7 +222,6 @@ export default function renderChart(props) {
         });
       }
     });
-    var isPressed = false;
     // 长按
     hammertime.get('press').set({ time: 500});
     hammertime.on('press', (ev) =>{
@@ -227,11 +236,47 @@ export default function renderChart(props) {
         });
       }
     });
+    var panZoom = function (ev) {
+      console.log('panzoom')
+      if (currentType === 'kline' && !isPressed) {
+        
+        var deltaX = ev.deltaX;
+        // console.log(elem.getOption().dataZoom[0]);
+        var currentTmpData = myChart.getOption().dataZoom[0];
+        var endValue = currentTmpData.endValue;
+        var startValue = currentTmpData.startValue;
+
+        var distance = -Math.ceil(deltaX / 40);
+        if (Math.abs(distance) >= 2) {
+          var currentStart = startValue + distance >- 1 ? (startValue + distance): 0;
+          var currentEnd = endValue + distance > allDates.length - 1 ? (allDates.length - 1): (endValue + distance);
+          if (currentEnd - currentStart >= 39) {
+            myChart.dispatchAction({
+              type: 'dataZoom',
+              startValue: currentStart,
+              endValue: currentEnd
+            });
+          }
+        }
+      }
+    }
+    // panleft
+    hammertime.on('panleft', panZoom);
+    hammertime.on('panright', panZoom);
     myChart.on('showTip',function(e){
       if (currentType === 'kline') {
         console.log('showTip',e);
         sendMessage({type: 'showTip',data:e});
       }
+    });
+    myChart.on('dataZoom',function(e){
+      if (currentType === 'kline') {
+        // console.log('dataZoom',e);
+        setTimeout(function(){
+          sendMessage({type: 'dataZoom',settings:myChart.getOption(),event:e});
+        },0)
+      }
     })
+  },0)
   `
   }

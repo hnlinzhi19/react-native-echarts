@@ -37,6 +37,7 @@ export default class App extends Component {
             height: this.props.height || 400,
             backgroundColor: this.props.backgroundColor || 'transparent'
           }}
+          javaScriptEnabled={true}
           scalesPageToFit={Platform.OS !== 'ios'}
           source={require('./tpl.html')}
           onMessage={event => this.props.onPress ? this.props.onPress(JSON.parse(event.nativeEvent.data)) : null}
