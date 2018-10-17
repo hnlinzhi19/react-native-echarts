@@ -6,8 +6,21 @@ export default function renderChart(props) {
   const width = props.width ? `${props.width}px` : 'auto';
   const chartType = props.chartType || ''
   console.log(props,chartType);
+
   return `
+  var originalPostMessage = window.postMessage;
+  
+  var patchedPostMessage = function(message, targetOrigin, transfer) { 
+    originalPostMessage(message, targetOrigin, transfer);
+  };
+
+  patchedPostMessage.toString = function() { 
+    return String(Object.hasOwnProperty).replace('hasOwnProperty', 'postMessage');
+  };
+
+  window.postMessage = patchedPostMessage;
   setTimeout(function() {
+
     var originOption = ${toString(props.option)};
     var allDates = ${toString(props.dates || [])};
     var currentType = ${toString(chartType)};
